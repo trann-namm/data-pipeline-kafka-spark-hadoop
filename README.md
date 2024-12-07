@@ -135,7 +135,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## **Contact**
 If you have any questions, feel free to reach out:
 - Email: namsherlock44@outlook.com
-- GitHub: [@your-username](https://github.com/trann-namm)
+- GitHub: [@trann-namm](https://github.com/trann-namm)
 
 ---
 
