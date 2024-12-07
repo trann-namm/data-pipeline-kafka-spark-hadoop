@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports:
+      - 2181:2181
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.9
+
+  kafka:
+    image: bitnami/kafka:3.8
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      #KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_DELETE_TOPIC_ENABLE: true
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - 9092:9092
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.8
+
+  streaming:
+    build:
+      context: ./makeStreamIntoKafka
+    container_name: streaming
+    depends_on:
+      - kafka
+    restart: always
+    environment:
+      KAFKA_BROKER: kafka:9092  # Kafka broker address inside Docker network
+      KAFKA_TOPIC: mytopic
+      FILE_PATH: /app/data.txt
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.7
+
+  spark:
+    build:
+      context: ./spark
+    user: "trannam" 
+    depends_on:
+      - kafka
+    restart: always
+    environment:
+      SPARK_MASTER: "local[*]"
+      HADOOP_USER_NAME: "trannam"
+      HADOOP_CONF_DIR: ./hadoop_config
+    ports:
+      - 4040:4040
+    volumes:
+      - ./spark:/app
+    command: >
+      bash -c "spark-submit /app/app.py"
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.6
+
+  jupyter:
+    build: ./notebooks  # Use custom Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=
+
+      - NB_USER=trannam 
+    volumes:
+      - ./notebooks:/home/trannam/work
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.5
+
+  namenode:
+    image: apache/hadoop:3.3.6
+    container_name: namenode
+    hostname: namenode
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+    volumes:
+      - ./hadoop_namenode:/opt/hadoop/data/nameNode
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./start-hdfs.sh:/start-hdfs.sh
+    ports:
+      - "9870:9870"
+    command: [ "/bin/bash", "/start-hdfs.sh" ]
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.2
+
+  datanode1:
+    image: apache/hadoop:3.3.6
+    container_name: datanode1
+    hostname: datanode1
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+    volumes:
+      - ./hadoop_datanode1:/opt/hadoop/data/dataNode1
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./init-datanode.sh:/init-datanode.sh
+    depends_on:
+      - namenode
+    command: [ "/bin/bash", "/init-datanode.sh" ]
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.3
+
+  datanode2:
+    # Similar configuration to datanode1, with different container_name and IP
+    image: apache/hadoop:3.3.6
+    container_name: datanode2
+    hostname: datanode2
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+    volumes:
+      - ./hadoop_datanode1:/opt/hadoop/data/dataNode2
+      - ./hadoop_config:/opt/hadoop/etc/hadoop
+      - ./init-datanode.sh:/init-datanode.sh
+    depends_on:
+      - namenode
+    command: [ "/bin/bash", "/init-datanode.sh" ]
+    networks:
+      hdfs_network:
+        ipv4_address: 172.20.0.4
+
+networks:
+  hdfs_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+# networks: 
+#   app-networks:
+#     name: app-networks
+#     driver: bridge
