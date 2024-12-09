@@ -1,9 +1,7 @@
 from time import sleep
 from kafka import KafkaProducer
-
+from config import *
 def read_file_and_send_to_kafka(file_path, topic, bootstrap_servers):
-    print("sleepingggg........................................................")
-    sleep(15)
     producer = KafkaProducer(bootstrap_servers=bootstrap_servers,
                              value_serializer=lambda v: v.encode('utf-8'))
     try:
@@ -23,6 +21,6 @@ def read_file_and_send_to_kafka(file_path, topic, bootstrap_servers):
 
 if __name__ == "__main__":
     FILE_PATH = "data.txt"  # Replace with your file name
-    TOPIC = "mytopic"      # Replace with your Kafka topic name
-    BOOTSTRAP_SERVERS = "kafka:9092"  # Replace with your Kafka broker address
+    TOPIC = kafka_topic_name;     # Replace with your Kafka topic name
+    BOOTSTRAP_SERVERS = kafka_bootstrap_server # Replace with your Kafka broker address
     read_file_and_send_to_kafka(FILE_PATH, TOPIC, BOOTSTRAP_SERVERS)

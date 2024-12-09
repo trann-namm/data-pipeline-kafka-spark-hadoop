@@ -42,6 +42,8 @@ services:
       KAFKA_BROKER: kafka:9092  # Kafka broker address inside Docker network
       KAFKA_TOPIC: mytopic
       FILE_PATH: /app/data.txt
+    volumes:
+      - ./config.py:/app/config.py
     networks:
       hdfs_network:
         ipv4_address: 172.20.0.7
@@ -61,6 +63,7 @@ services:
       - 4040:4040
     volumes:
       - ./spark:/app
+      - ./config.py:/app/config.py
     command: >
       bash -c "spark-submit /app/app.py"
     networks:
@@ -75,10 +78,10 @@ services:
       - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
       - JUPYTER_ENABLE_LAB=yes
       - JUPYTER_TOKEN=
-
       - NB_USER=trannam 
     volumes:
       - ./notebooks:/home/trannam/work
+      - ./config.py:/home/trannam/work/config.py
     networks:
       hdfs_network:
         ipv4_address: 172.20.0.5

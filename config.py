@@ -1,0 +1,6 @@
+kafka_topic_name = "mytopic" 
+kafka_bootstrap_server = "kafka:9092"  
+hdfs_url = "hdfs://namenode:9000"
+hdfs_target_url = "hdfs://namenode:9000/user/hive/warehouse/web_logs_partitioned"
+hdfs_test_path = "hdfs://namenode:9000/user/spark/output/parquet_files"
+hdfs_offset_path = "hdfs://namenode:9000/user/trannam/offsetKafka"

@@ -22,16 +22,8 @@
         <value>hdfs://namenode:9000</value>
     </property>
     <property>
-	<name>hadoop.tmp.dir</name>
-	<value>/home/hadoopdata/tmp</value>
-	<description>Parent directory for other temporary directories.</description>
+	      <name>hadoop.tmp.dir</name>
+	      <value>/home/hadoopdata/tmp</value>
+	      <description>Parent directory for other temporary directories.</description>
     </property>
-      <!-- <property>
-    <name>hadoop.proxyuser.trannam.groups</name>
-    <value>*</value>
-  </property>
-  <property>
-    <name>hadoop.proxyuser.trannam.hosts</name>
-    <value>*</value>
-  </property>   -->  
 </configuration>

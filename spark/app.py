@@ -1,22 +1,21 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import regexp_extract,col, to_date, year, month, dayofmonth
-from time import sleep
+from config import *
 # Create Spark session
 
-sleep(15)
 spark = SparkSession.builder \
     .appName("KafkaSparkStreaming") \
     .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3") \
     .getOrCreate()
     
 df = spark.createDataFrame([("test", 1), ("sample", 2)], ["key", "value"])
-df.write.mode("overwrite").parquet("hdfs://namenode:9000/user/trannam/test_hdfs")
+df.write.mode("overwrite").parquet(hdfs_test_path)
 
 # Read streaming data from Kafka
 raw_stream = spark.readStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka:9092") \
-    .option("subscribe", "mytopic") \
+    .option("kafka.bootstrap.servers", kafka_bootstrap_server) \
+    .option("subscribe", kafka_topic_name) \
     .option("startingOffsets", "earliest") \
     .load()
 # Match the log_regex vs each line
@@ -45,8 +44,8 @@ parsed_stream = parsed_stream.withColumn("date", to_date("datetime", "dd/MMM/yyy
 # Write data hdfs as Parquet format
 parsed_stream.writeStream \
     .format("parquet") \
-    .option("path", "hdfs://namenode:9000/user/hive/warehouse/web_logs_partitioned") \
-    .option("checkpointLocation", "hdfs://namenode:9000/user/trannam/offsetKafka") \
+    .option("path", hdfs_target_url) \
+    .option("checkpointLocation", hdfs_offset_path) \
     .partitionBy("year", "month", "day") \
     .outputMode("append") \
     .start() \
