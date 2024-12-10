@@ -1,7 +1,16 @@
 # **Data Pipeline using Kafka, Spark, Hadoop on Docker**
 
 An end-to-end data pipeline that leverages Apache Kafka for real-time data streaming, Apache Spark for processing, and Hadoop for scalable storage, all deployed seamlessly with Docker.
-
+## Table of Contents
+- [Introduction](#introduction)
+- [Features](#features)
+- [Architechture](#architecture)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Setup and Deployment](#setup-and-deployment)
+- [How it runs](#how-it-runs)
+- [Exception](#exception)
+- [Contributing](#contributing)
 ## **Introduction**
 This project demonstrates a scalable data pipeline using Dockerized versions of:
 - **Apache Kafka**: For real-time data streaming.
